@@ -1,0 +1,277 @@
+import { useEffect, useRef } from 'react';
+import gsap from '@/utils/gsapInit';
+
+export const EmotionalFooter: React.FC = () => {
+  const footerRef = useRef<HTMLElement | null>(null);
+  const titleRef = useRef<HTMLHeadingElement | null>(null);
+  const subtitleRef = useRef<HTMLParagraphElement | null>(null);
+  const socialRef = useRef<HTMLDivElement | null>(null);
+  const particlesRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    // Footer reveal animation as it enters viewport
+    if (footerRef.current) {
+      const footerTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: footerRef.current,
+          start: 'top bottom+=100',
+          end: 'bottom top',
+          scrub: true
+        }
+      });
+
+      // Fade in footer content
+      footerTl.from(
+        footerRef.current,
+        {
+          opacity: 0,
+          y: 50,
+          duration: 1.5,
+          ease: 'power3.out'
+        }
+      );
+
+      // Animate title letters
+      const titleText = titleRef.current?.textContent ?? '';
+      footerTl.from(
+        [...titleText],
+        {
+          yPercent: 100,
+          opacity: 0,
+          stagger: 0.05,
+          duration: 0.8,
+          ease: 'power3.out'
+        },
+        '-=1.0'
+      );
+
+      // Animate subtitle
+      footerTl.from(
+        subtitleRef.current,
+        {
+          yPercent: 100,
+          opacity: 0,
+          duration: 0.8,
+          ease: 'power3.out'
+        },
+        '-=0.5'
+      );
+
+      // Animate social icons with magnetic effect
+      const socialNodes = socialRef.current?.children;
+      if (socialNodes) {
+        footerTl.from(
+          Array.from(socialNodes),
+          {
+            opacity: 0,
+            y: 30,
+            stagger: 0.1,
+            duration: 0.8,
+            ease: 'power3.out'
+          },
+          '-=0.3'
+        );
+      }
+
+      // Add magnetic effect to social icons
+      const socialLinks = socialRef.current?.querySelectorAll('.social-link');
+      socialLinks?.forEach(link => {
+        if (!(link instanceof HTMLElement)) return;
+
+        const handleMouseMove = (e: MouseEvent) => {
+          const rect = link.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          const distance = Math.sqrt(x * x + y * y);
+          const magnetStrength = 0.2; // Stronger magnetic effect for social icons
+
+          if (distance < 80) {
+            const moveX = x * magnetStrength;
+            const moveY = y * magnetStrength;
+            const rotation = Math.atan2(y, x) * 8; // More pronounced rotation
+
+            gsap.to(link, {
+              x: moveX,
+              y: moveY,
+              rotation: rotation,
+              scale: 1.2,
+              duration: 0.4,
+              ease: 'power3.out'
+            });
+          } else {
+            gsap.to(link, {
+              x: 0,
+              y: 0,
+              rotation: 0,
+              scale: 1,
+              duration: 0.6,
+              ease: 'elastic.out(1, 0.5)'
+            });
+          }
+        };
+
+        const handleMouseLeave = () => {
+          gsap.to(link, {
+            x: 0,
+            y: 0,
+            rotation: 0,
+            scale: 1,
+            duration: 0.6,
+            ease: 'elastic.out(1, 0.5)'
+          });
+        };
+
+        link.addEventListener('mousemove', handleMouseMove);
+        link.addEventListener('mouseleave', handleMouseLeave);
+
+        // Cleanup for this link
+        return () => {
+          link.removeEventListener('mousemove', handleMouseMove);
+          link.removeEventListener('mouseleave', handleMouseLeave);
+        };
+      });
+    }
+
+    // Add particle dissipation effect at the bottom
+    if (particlesRef.current) {
+      const particleTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: footerRef.current,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1
+        }
+      });
+
+      particleTl.to(
+        particlesRef.current,
+        {
+          opacity: 0,
+          y: -100,
+          duration: 2,
+          ease: 'power3.in'
+        }
+      );
+    }
+
+    // Cleanup
+    return () => {
+      // The social links event listeners are cleaned up in the return function of the forEach above
+    };
+  }, []);
+
+  return (
+    <footer
+      ref={footerRef}
+      className="relative min-h-[80vh] w-full overflow-hidden bg-background"
+      aria-label="Emotional footer section"
+    >
+      {/* Gradient overlay for depth */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-t from-background/90 to-transparent"></div>
+
+      {/* Particle dissipation effect */}
+      <div ref={particlesRef} className="absolute inset-0 z-20 pointer-events-none">
+        <div className="bg-[url('/assets/footer-particles.png')] absolute inset-0 opacity-30 animate-[particle_drift_30s_linear_infinite]"></div>
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-[80vh] px-6 text-center text-white">
+        {/* Title with individual letter animation */}
+        <h1
+          ref={titleRef}
+          className="text-5xl md:text-6xl lg:text-7xl font-playfair-display font-800 mb-6 leading-snug tracking-tighter"
+        >
+          Where Dreams Take Shape
+        </h1>
+
+        {/* Subtitle */}
+        <p
+          ref={subtitleRef}
+          className="text-xl md:text-2xl font-inter font-400 max-w-xl leading-relaxed text-muted-foreground/90 mb-10"
+        >
+          In the quiet spaces between pixels and possibilities, we find the courage to create
+        </p>
+
+        {/* Social icons with magnetic effect */}
+        <div
+          ref={socialRef}
+          className="flex flex-wrap justify-center gap-6 mb-12"
+        >
+          <a
+            href="#"
+            className="relative w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20
+                     rounded-full transition-all duration-500 backdrop-blur-sm social-link"
+            aria-label="Visit our Instagram"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M4 4v16a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2z"></path>
+            </svg>
+          </a>
+
+          <a
+            href="#"
+            className="relative w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20
+                     rounded-full transition-all duration-500 backdrop-blur-sm social-link"
+            aria-label="Visit our Twitter/X"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path>
+            </svg>
+          </a>
+
+          <a
+            href="#"
+            className="relative w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20
+                     rounded-full transition-all duration-500 backdrop-blur-sm social-link"
+            aria-label="Visit our Dribbble"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M12 2.25c-1.303 0-2.584.185-3.757.512a6.042 6.042 0 00-3.26 8.19l-1.003.652a2.25 2.25 0 00-1.065 3.06l2.16.063a2.25 2.25 0 002.226-1.07l.797-.519a52.109 52.109 0 0111.186-2.311c1.18-.625 2.184-1.533 2.713-2.68a6.066 6.066 0 00-.74-4.29 6.066 6.066 0 00-2.662-2.58A5.992 5.992 0 0012 2.25z"></path>
+            </svg>
+          </a>
+
+          <a
+            href="#"
+            className="relative w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20
+                     rounded-full transition-all duration-500 backdrop-blur-sm social-link"
+            aria-label="Visit our Behance"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M4 4v16a2 2 0 002 2h16a2 2 0 002 2V4a2 2 0 002-2H4z"></path>
+            </svg>
+          </a>
+
+          <a
+            href="#"
+            className="relative w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20
+                     rounded-full transition-all duration-500 backdrop-blur-sm social-link"
+            aria-label="Visit our LinkedIn"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M19 11H5a2 2 0 00-2 2v1a2 2 0 002 2h14a2 2 0 002-2v-1a2 2 0 002-2zM5 5a2 2 0 012-2h10a2 2 0 012 2v1a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"></path>
+            </svg>
+          </a>
+        </div>
+
+        {/* Fade-out message at the very bottom */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-muted-foreground/50">
+          Thank you for journeying with us
+        </div>
+
+        {/* Floating decorative elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="floating-element absolute -top-10 left-1/3 w-16 h-16 bg-white/5 rounded-full backdrop-blur-sm animate-[float_6s_ease-in_out_infinite]"></div>
+          <div className="floating-element absolute bottom-1/3 right-1/4 w-12 h-12 bg-white/3 rounded-full backdrop-blur-sm animate-[float_8s_ease-in_out_infinite]"></div>
+          <div className="floating-element absolute top-1/2 left-3/5 w-20 h-20 bg-white/4 rounded-full backdrop-blur-sm animate-[float_10s_ease-in_out_infinite]"></div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default EmotionalFooter;
