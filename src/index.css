@@ -1,114 +1,152 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
-/* Cinematic Design System */
-:root {
-  /* Typography */
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-serif: 'Playfair Display', ui-serif, Georgia, serif;
-  --font-mono: 'Geist Mono', ui-monospace, Menlo, monospace;
+/* Define CSS variables in the base layer */
+@layer base {
+  :root {
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-serif: 'Playfair Display', ui-serif, Georgia, serif;
+    --font-mono: 'Geist Mono', ui-monospace, Menlo, monospace;
 
-  /* Colors - Cinematic Dark Theme */
-  --background: #020617; /* Darkest navy */
-  --foreground: #f8fafc; /* Almost white */
-  --muted: #334155; /* Slate gray */
-  --muted-foreground: #e2e8f0; /* Light slate */
+    /* Colors - Cinematic Dark Theme (as RGB values for use with rgb() function) */
+    --background: 2 6 23; /* #020617 */
+    --foreground: 248 250 252; /* #f8fafc */
+    --muted: 51 65 85; /* #334155 */
+    --muted-foreground: 226 232 240; /* #e2e8f0 */
 
-  --primary: #0f172a; /* Navy blue */
-  --primary-foreground: #f8fafc;
+    --primary: 15 23 42; /* #0f172a */
+    --primary-foreground: 248 250 252; /* #f8fafc */
 
-  --secondary: #d4af37; /* Cinematic gold */
-  --secondary-foreground: #020617;
+    --secondary: 212 175 55; /* #d4af37 */
+    --secondary-foreground: 2 6 23; /* #020617 */
 
-  --accent: #dc2626; /* Cinematic crimson */
-  --accent-foreground: #ffffff;
+    --accent: 220 38 38; /* #dc2626 */
+    --accent-foreground: 255 255 255; /* #ffffff */
 
-  --destructive: #dc2626;
-  --destructive-foreground: #ffffff;
+    --destructive: 220 38 38; /* #dc2626 */
+    --destructive-foreground: 255 255 255; /* #ffffff */
 
-  --border: #1e293b; /* Slate blue */
-  --input: #1e293b;
-  --ring: #3b82f6; /* Blue */
+    --border: 30 41 59; /* #1e293b */
+    --input: 30 41 59; /* #1e293b */
+    --ring: 59 130 246; /* #3b82f6 */
 
-  --radius: 0.5rem;
+    --radius: 0.5rem;
 
-  /* Spacing - 8px grid */
-  --spacing-1: 0.25rem;
-  --spacing-2: 0.5rem;
-  --spacing-3: 0.75rem;
-  --spacing-4: 1rem;
-  --spacing-5: 1.25rem;
-  --spacing-6: 1.5rem;
-  --spacing-8: 2rem;
-  --spacing-10: 2.5rem;
-  --spacing-12: 3rem;
-  --spacing-16: 4rem;
-  --spacing-20: 5rem;
-  --spacing-24: 6rem;
-  --spacing-32: 8rem;
-}
+    /* Spacing - 8px grid */
+    --spacing-1: 0.25rem;
+    --spacing-2: 0.5rem;
+    --spacing-3: 0.75rem;
+    --spacing-4: 1rem;
+    --spacing-5: 1.25rem;
+    --spacing-6: 1.5rem;
+    --spacing-8: 2rem;
+    --spacing-10: 2.5rem;
+    --spacing-12: 3rem;
+    --spacing-16: 4rem;
+    --spacing-20: 5rem;
+    --spacing-24: 6rem;
+    --spacing-32: 8rem;
+  }
 
-/* Dark mode overrides */
-.dark {
-  --background: #020617;
-  --foreground: #f8fafc;
-  --muted: #334155;
-  --muted-foreground: #e2e8f0;
-  --primary: #0f172a;
-  --primary-foreground: #f8fafc;
-  --secondary: #d4af37;
-  --secondary-foreground: #020617;
-  --accent: #dc2626;
-  --accent-foreground: #ffffff;
-}
-
-/* Base styles */
-* {
-  @media (prefers-reduced-motion: no-preference) {
-    scroll-behavior: smooth;
+  /* Dark mode overrides */
+  .dark {
+    --background: 2 6 23; /* #020617 */
+    --foreground: 248 250 252; /* #f8fafc */
+    --muted: 51 65 85; /* #334155 */
+    --muted-foreground: 226 232 240; /* #e2e8f0 */
+    --primary: 15 23 42; /* #0f172a */
+    --primary-foreground: 248 250 252; /* #f8fafc */
+    --secondary: 212 175 55; /* #d4af37 */
+    --secondary-foreground: 2 6 23; /* #020617 */
+    --accent: 220 38 38; /* #dc2626 */
+    --accent-foreground: 255 255 255; /* #ffffff */
   }
 }
 
-body {
-  @apply bg-background text-foreground antialiased;
-  font-feature-settings: "rlig" 1, "calt" 1;
+/* Apply base styles */
+@layer base {
+  * {
+    @media (prefers-reduced-motion: no-preference) {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    background-color: rgb(var(--background));
+    color: rgb(var(--foreground));
+    @apply antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }
 
-/* Custom utilities for cinematic effects */
-.glassmorphism {
-  @apply bg-white/10 backdrop-blur-sm border-white/20;
+/* Define our custom component classes */
+@layer components {
+  .bg-background {
+    background-color: rgb(var(--background));
+  }
+
+  .text-foreground {
+    color: rgb(var(--foreground));
+  }
+
+  .text-muted-foreground {
+    color: rgb(var(--muted-foreground));
+  }
+
+  .border-border {
+    border-color: rgb(var(--border));
+  }
+
+  /* Custom utilities for cinematic effects */
+  .glassmorphism {
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
 }
 
-.text-balance {
-  text-wrap: balance;
-}
+@layer utilities {
+  .font-playfair-display {
+    font-family: var(--font-serif);
+  }
 
-.text-pretty {
-  text-wrap: pretty;
+  .font-inter {
+    font-family: var(--font-sans);
+  }
+
+  .font-300 { font-weight: 300; }
+  .font-400 { font-weight: 400; }
+  .font-500 { font-weight: 500; }
+  .font-600 { font-weight: 600; }
+  .font-700 { font-weight: 700; }
+  .font-800 { font-weight: 800; }
+  .font-900 { font-weight: 900; }
 }
 
 /* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-}
+@layer utilities {
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
 
-::-webkit-scrollbar-track {
-  @apply bg-background;
-}
+  ::-webkit-scrollbar-track {
+    background-color: rgb(var(--background));
+  }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-primary/50 rounded-full;
-}
+  ::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--primary) / 0.5);
+    border-radius: 9999px;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary/70;
-}
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(var(--primary) / 0.7);
+  }
 
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.1) transparent;
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
 }
 
 /* Film grain overlay */
@@ -118,4 +156,13 @@ body {
   background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'><filter id='noiseFilter'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0   0 0 0 0 0   0 0 0 0 0   0 0 0 0.2 0'/></filter><rect width='100%' height='100%' filter='url(%23noiseFilter)'/></svg>");
   opacity: 0.1;
   pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

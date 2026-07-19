@@ -50,10 +50,10 @@ const MagneticButton = ({ children, className = '', onClick }: MagneticButtonPro
     <button
       ref={buttonRef}
       className={`relative overflow-hidden flex items-center justify-center
-                 px-6 py-3 bg-transparent border-2 border-white/20
-                 text-white hover:text-white/90 transition-all duration-300
+                 px-6 py-3 border border-white/60 bg-white/10
+                 text-white hover:bg-white/20 transition-all duration-300
                  cursor-pointer focus:outline-none focus-visible:ring-2
-                 focus-relative:ring-white/20 backdrop-blur-sm
+                 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 backdrop-blur-sm
                  ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -61,7 +61,7 @@ const MagneticButton = ({ children, className = '', onClick }: MagneticButtonPro
     >
       <span className="relative z-10">{children}</span>
       {/* Magnetic ripple effect */}
-      <div className="absolute inset-0 bg-white/5 opacity-0
+      <div className="absolute inset-0 bg-white opacity-5
                      transition-opacity duration-300
                      pointer-events-none"
         style={{ opacity: isHovered ? 0.1 : 0 }}

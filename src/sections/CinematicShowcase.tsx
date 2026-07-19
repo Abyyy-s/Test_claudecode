@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from '@/utils/gsapInit';
-
-// Import lenis instance (we'll get it from window or create singleton)
-// We are using the imported lenis from '@/utils/lenisInit'
+import { motion } from 'framer-motion';
 
 interface ShowcaseItem {
   id: number;
@@ -51,10 +49,12 @@ export const CinematicShowcase: React.FC = () => {
     layer2: null as HTMLDivElement | null,
     layer3: null as HTMLDivElement | null
   });
+  const slidesRef = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
-    // Set up scroll trigger for this section
-    if (showcaseRef.current) {
+    const ctx = gsap.context(() => {
+      // Set up scroll trigger for this section
+      if (!showcaseRef.current) return;
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: showcaseRef.current,
@@ -100,11 +100,11 @@ export const CinematicShowcase: React.FC = () => {
           ease: 'power3.out'
         }, '-=0.6');
 
-      // Cleanup
-      return () => {
-        tl.kill();
-      };
-    }
+    }, showcaseRef);
+
+    return () => {
+      ctx.revert();
+    };
   }, []);
 
   const handleDotClick = (index: number) => {
@@ -163,117 +163,80 @@ export const CinematicShowcase: React.FC = () => {
   return (
     <section
       ref={showcaseRef}
-      className="relative min-h-[100vh] w-full overflow-hidden bg-background"
+      className="relative min-h-[100vh] w-full overflow-hidden bg-[#020617]"
       aria-label="Cinematic showcase section"
     >
-      {/* Parallax background layers for 3D effect */}
-      <div className="absolute inset-0 -z-20 overflow-hidden">
-        <div
-          ref={el => {
-            bgLayersRef.current.layer1 = el;
-          }}
-          className="parallax-layer-1 absolute inset-0 bg-[url('/assets/showcase-bg-1.png')] bg-cover bg-center"
-        ></div>
-        <div
-          ref={el => {
-            bgLayersRef.current.layer2 = el;
-          }}
-          className="parallax-layer-2 absolute inset-0 bg-[url('/assets/showcase-bg-2.png')] bg-cover bg-center"
-        ></div>
-        <div
-          ref={el => {
-            bgLayersRef.current.layer3 = el;
-          }}
-          className="parallax-layer-3 absolute inset-0 bg-[url('/assets/showcase-bg-3.png')] bg-cover bg-center"
-        ></div>
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#020617]/50 pointer-events-none"></div>
+
+      {/* Slides container */}
+      <div className="relative h-full">
+        {showcaseItems.map((slide, index) => (
+          <div
+            key={slide.title}
+            ref={(el) => {
+              slidesRef.current[index] = el;
+            }}
+            className={`absolute inset-0 flex items-center justify-center px-6 pointer-events-none ${
+              index === currentIndex ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            } transition-opacity duration-800`}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -30 }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              className="relative pointer-auto bg-[#020617]/80 backdrop-blur-md rounded-3xl shadow-2xl w-[90%] max-w-[800px] max-h-[90vh] overflow-hidden transform transition-all duration-500"
+            >
+              {/* Image */}
+              <div className="relative h-[60%] w-full overflow-hidden">
+                <img
+                  ref={index === currentIndex ? imageRef : null}
+                  src={slide.image}
+                  alt={slide.alt}
+                  className="object-cover w-full h-full"
+                  loading="lazy"
+                />
+                {/* Gradient overlay for image */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#020617]/60 to-transparent pointer-events-none"></div>
+              </div>
+
+              {/* Content */}
+              <div className="relative mt-6 max-w-xl px-4">
+                <h2 ref={index === currentIndex ? titleRef : null} className="text-3xl md:text-4xl lg:text-5xl font-playfair-display font-700 mb-4 leading-snug text-white">
+                  {slide.title}
+                </h2>
+                <p ref={index === currentIndex ? descriptionRef : null} className="text-lg md:text-xl font-inter font-400 leading-relaxed text-muted-foreground/90">
+                  {slide.description}
+                </p>
+              </div>
+
+              {/* Decorative elements */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="decorative-element absolute -top-10 left-1/5 w-16 h-16 bg-white opacity-5 rounded-full backdrop-blur-sm animate-float-slow"></div>
+                <div className="decorative-element absolute bottom-1/3 right-1/4 w-20 h-20 bg-white opacity-3 rounded-full backdrop-blur-sm animate-float-medium"></div>
+                <div className="decorative-element absolute top-1/3 left-3/4 w-12 h-12 bg-white opacity-4 rounded-full backdrop-blur-sm animate-float-fast"></div>
+                <div className="decorative-element absolute bottom-1/4 left-1/4 w-18 h-18 bg-white opacity-2 rounded-full backdrop-blur-sm animate-float-medium"></div>
+              </div>
+            </motion.div>
+          </div>
+        ))}
       </div>
 
-      {/* Content container */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[100vh] px-6 text-center text-white">
-        {/* Title */}
-        <h1
-          ref={titleRef}
-          className="text-4xl md:text-5xl lg:text-6xl font-playfair-display font-700 mb-6 leading-snug"
-        >
-          {showcaseItems[currentIndex].title}
-        </h1>
-
-        {/* Description */}
-        <p
-          ref={descriptionRef}
-          className="text-lg md:text-xl font-inter font-400 max-w-xl leading-relaxed text-muted-foreground/90 mb-10"
-        >
-          {showcaseItems[currentIndex].description}
-        </p>
-
-        {/* Image container */}
-        <div className="relative w-full max-w-4xl h-[500px] lg:h-[600px] mb-12 rounded-2xl overflow-hidden shadow-2xl">
-          <img
-            ref={imageRef}
-            src={showcaseItems[currentIndex].image}
-            alt={showcaseItems[currentIndex].alt}
-            className="w-full h-full object-cover transition-transform duration-1000 ease-in-out"
-          />
-          {/* Gradient overlay for depth */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/50 pointer-events-none"></div>
-        </div>
-
-        {/* Magnetic navigation dots */}
-        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex space-x-4 z-20" ref={dotsRef}>
-          {showcaseItems.map((item, index) => (
-            <button
-              key={item.id}
-              onClick={() => handleDotClick(index)}
-              className={`relative w-3 h-3 bg-white/20 rounded-full
-                         transition-all duration-300 ease-out
-                         hover:bg-white/30
-                         ${index === currentIndex ? 'bg-white/50 scale-110' : ''}`}
-              aria-label={`Navigate to slide ${index + 1}`}
-            >
-              {/* Magnetic pulse effect */}
-              <div className="absolute inset-0 bg-white/10 rounded-full
-                           opacity-0 transition-opacity duration-300
-                           pointer-events-none"
-                   style={{ opacity: index === currentIndex ? 0.3 : 0 }}
-              ></div>
-            </button>
-          ))}
-        </div>
-
-        {/* Directional hints */}
-        {showcaseItems.length > 1 && (
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex space-x-6 text-sm text-white/50">
-            <button
-              onClick={() => {
-                if (!isAnimating) {
-                  const prev = (currentIndex - 1 + showcaseItems.length) % showcaseItems.length;
-                  setIsAnimating(true);
-                  setCurrentIndex(prev);
-                }
-              }}
-              className="discrete hover:text-white/80 transition-colors"
-              disabled={isAnimating}
-              aria-label="Previous slide"
-            >
-              ‹
-            </button>
-            <span>/{showcaseItems.length}</span>
-            <button
-              onClick={() => {
-                if (!isAnimating) {
-                  const next = (currentIndex + 1) % showcaseItems.length;
-                  setIsAnimating(true);
-                  setCurrentIndex(next);
-                }
-              }}
-              className="discrete hover:text-white/80 transition-colors"
-              disabled={isAnimating}
-              aria-label="Next slide"
-            >
-              ›
-            </button>
-          </div>
-        )}
+      {/* Navigation dots */}
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-4">
+        {showcaseItems.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => handleDotClick(index)}
+            className={`flex h-11 w-11 items-center justify-center rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
+              index === currentIndex ? 'bg-white/15' : 'hover:bg-white/10'
+            }`}
+            aria-label={`Slide ${index + 1}`}
+          >
+            <span className={`h-3 w-3 rounded-full bg-white transition-transform ${index === currentIndex ? 'scale-110 opacity-100' : 'opacity-50'}`} />
+          </button>
+        ))}
       </div>
     </section>
   );

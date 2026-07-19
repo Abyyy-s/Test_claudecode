@@ -9,7 +9,6 @@ export const EmotionalFooter: React.FC = () => {
   const particlesRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
     // Footer reveal animation as it enters viewport
     if (footerRef.current) {
       const footerTl = gsap.timeline({
@@ -33,20 +32,18 @@ export const EmotionalFooter: React.FC = () => {
       );
 
       // Animate title letters
-      if (titleRef.current) {
-        const titleLetters = titleRef.current.querySelectorAll('span');
-        footerTl.from(
-          Array.from(titleLetters),
-          {
-            yPercent: 100,
-            opacity: 0,
-            stagger: 0.05,
-            duration: 0.8,
-            ease: 'power3.out'
-          },
-          '-=1.0'
-        );
-      }
+      const titleText = titleRef.current?.textContent ?? '';
+      footerTl.from(
+        [...titleText],
+        {
+          yPercent: 100,
+          opacity: 0,
+          stagger: 0.05,
+          duration: 0.8,
+          ease: 'power3.out'
+        },
+        '-=1.0'
+      );
 
       // Animate subtitle
       footerTl.from(
@@ -157,11 +154,9 @@ export const EmotionalFooter: React.FC = () => {
       );
     }
 
-    }, footerRef);
-
     // Cleanup
     return () => {
-      ctx.revert();
+      // The social links event listeners are cleaned up in the return function of the forEach above
     };
   }, []);
 
@@ -186,9 +181,7 @@ export const EmotionalFooter: React.FC = () => {
           ref={titleRef}
           className="text-5xl md:text-6xl lg:text-7xl font-playfair-display font-800 mb-6 leading-snug tracking-tighter"
         >
-          {[...'Where Dreams Take Shape'].map((char, index) => (
-            <span key={index}>{char}</span>
-          ))}
+          Where Dreams Take Shape
         </h1>
 
         {/* Subtitle */}

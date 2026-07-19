@@ -68,8 +68,26 @@ export const InteractiveShowcase: React.FC = () => {
   const modalSolutionRef = useRef<HTMLParagraphElement | null>(null);
   const modalResultRef = useRef<HTMLParagraphElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const lastFocusedElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    if (!isModalOpen) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') handleCloseModal();
+    };
+
+    window.addEventListener('keydown', closeOnEscape);
+    requestAnimationFrame(() => closeButtonRef.current?.focus());
+
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [isModalOpen]);
+
+  useEffect(() => {
+    const cardHandlers: { element: HTMLElement; mouseMove: (e: MouseEvent) => void; mouseLeave: () => void }[] = [];
+    let closeButtonHandler: { element: HTMLElement; mouseMove: (e: MouseEvent) => void; mouseLeave: () => void } | null = null;
+
+    const ctx = gsap.context(() => {
     // Animate title on entry
     if (titleRef.current) {
       gsap.from(titleRef.current, {
@@ -110,8 +128,6 @@ export const InteractiveShowcase: React.FC = () => {
 
     // Add magnetic effect to project cards
     const projectCards = document.querySelectorAll('.project-card');
-    const cardHandlers: { element: HTMLElement; mouseMove: (e: MouseEvent) => void; mouseLeave: () => void }[] = [];
-
     projectCards.forEach((card: Element) => {
       if (!(card instanceof HTMLElement)) return;
 
@@ -162,8 +178,6 @@ export const InteractiveShowcase: React.FC = () => {
     });
 
     // Add magnetic effect to modal close button
-    let closeButtonHandler: { element: HTMLElement; mouseMove: (e: MouseEvent) => void; mouseLeave: () => void } | null = null;
-
     if (closeButtonRef.current) {
       const closeButton = closeButtonRef.current;
       if (!(closeButton instanceof HTMLElement)) return;
@@ -204,10 +218,10 @@ export const InteractiveShowcase: React.FC = () => {
         gsap.to(closeButton, {
           x: 0,
           y: 0,
-          rotation: 0,
-          scale: 1,
-          duration: 0.6,
-          ease: 'elastic.out(1, 0.5)'
+            rotation: 0,
+            scale: 1,
+            duration: 0.6,
+            ease: 'elastic.out(1, 0.5)'
         });
       };
 
@@ -216,6 +230,8 @@ export const InteractiveShowcase: React.FC = () => {
 
       closeButtonHandler = { element: closeButton, mouseMove: handleMouseMove, mouseLeave: handleMouseLeave };
     }
+
+    }, showcaseRef);
 
     // Cleanup function
     return () => {
@@ -230,11 +246,13 @@ export const InteractiveShowcase: React.FC = () => {
         closeButtonHandler.element.removeEventListener('mousemove', closeButtonHandler.mouseMove);
         closeButtonHandler.element.removeEventListener('mouseleave', closeButtonHandler.mouseLeave);
       }
+      ctx.revert();
     };
   }, []);
 
   const handleProjectClick = (project: Project) => {
     if (isAnimating) return;
+    lastFocusedElementRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setIsAnimating(true);
     setActiveProject(project);
     setIsModalOpen(true);
@@ -308,13 +326,14 @@ export const InteractiveShowcase: React.FC = () => {
         setIsModalOpen(false);
         setActiveProject(null);
         setIsAnimating(false);
+        lastFocusedElementRef.current?.focus();
       });
   };
 
   return (
     <section
       ref={showcaseRef}
-      className="relative min-h-[100vh] w-full overflow-hidden bg-background"
+      className="relative min-h-[100vh] w-full overflow-hidden bg-[#020617]"
       aria-label="Interactive showcase section"
     >
       {/* Header */}
@@ -332,19 +351,19 @@ export const InteractiveShowcase: React.FC = () => {
         {/* Filter buttons */}
         <div ref={filterRef} className="flex flex-wrap justify-center gap-4 mb-12">
           <button
-            className="flex items-center justify-center px-4 py-2 bg-transparent border-2 border-white/20 text-white hover:text-white/90 transition-all duration-300 rounded-full backdrop-blur-sm filter-btn"
+              className="filter-btn flex min-h-11 items-center justify-center px-4 py-2 border-2 border-white/50 bg-white/10 text-white transition-all duration-300 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full backdrop-blur-sm"
             aria-label="Show all projects"
           >
             All
           </button>
           <button
-            className="flex items-center justify-center px-4 py-2 bg-transparent border-2 border-white/20 text-white hover:text-white/90 transition-all duration-300 rounded-full backdrop-blur-sm filter-btn"
+              className="filter-btn flex min-h-11 items-center justify-center px-4 py-2 border-2 border-white/50 bg-white/10 text-white transition-all duration-300 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full backdrop-blur-sm"
             aria-label="Show design projects"
           >
             Design
           </button>
           <button
-            className="flex items-center justify-center px-4 py-2 bg-transparent border-2 border-white/20 text-white hover:text-white/90 transition-all duration-300 rounded-full backdrop-blur-sm filter-btn"
+              className="filter-btn flex min-h-11 items-center justify-center px-4 py-2 border-2 border-white/50 bg-white/10 text-white transition-all duration-300 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-full backdrop-blur-sm"
             aria-label="Show development projects"
           >
             Development
@@ -356,10 +375,12 @@ export const InteractiveShowcase: React.FC = () => {
       <div className="relative z-10 px-6 pb-20">
         <div ref={projectsRef} className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {projects.map(project => (
-            <div
+            <button
+              type="button"
               key={project.id}
-              className="relative group cursor-pointer"
+              className="relative group w-full cursor-pointer rounded-2xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-slate-950"
               onClick={() => handleProjectClick(project)}
+              aria-label={`Open case study: ${project.title}`}
             >
               <div className="relative w-full h-[300px] md:h-[350px] lg:h-[400px] rounded-2xl overflow-hidden shadow-2xl project-card">
                 <img
@@ -368,7 +389,7 @@ export const InteractiveShowcase: React.FC = () => {
                   className="w-full h-full object-cover transition-transform duration-1000 ease-in-out group-hover:scale-105"
                 />
                 {/* Gradient overlay for depth */}
-                <div className="absolute inset-0 bg-gradient-to-t from-transparent to-background/70 pointer-events-none"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent to-[#020617]/70 pointer-events-none"></div>
                 {/* Project title overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <h3 className="text-xl font-playfair-display font-600 text-white mb-2">
@@ -379,7 +400,7 @@ export const InteractiveShowcase: React.FC = () => {
                   </p>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -389,10 +410,13 @@ export const InteractiveShowcase: React.FC = () => {
         <div
           ref={modalRef}
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm pointer-events-none"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="project-modal-title"
         >
           <div
             ref={modalContentRef}
-            className="relative pointer-auto bg-background/80 backdrop-blur-md rounded-3xl shadow-2xl w-[90%] max-w-[800px] max-h-[90vh] overflow-hidden transform transition-all duration-500"
+            className="relative pointer-auto bg-[#020617]/80 backdrop-blur-md rounded-3xl shadow-2xl w-[90%] max-w-[800px] max-h-[90vh] overflow-hidden transform transition-all duration-500"
           >
             {/* Image */}
             <div className="relative h-[400px]">
@@ -403,7 +427,7 @@ export const InteractiveShowcase: React.FC = () => {
                 className="w-full h-full object-cover"
               />
               {/* Gradient overlay for depth */}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/50 pointer-events-none"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#020617]/50 pointer-events-none"></div>
             </div>
 
             {/* Content */}
@@ -411,6 +435,7 @@ export const InteractiveShowcase: React.FC = () => {
               <div className="space-y-4">
                 <h2
                   ref={modalTitleRef}
+                  id="project-modal-title"
                   className="text-3xl font-playfair-display font-700 text-white"
                 >
                   {activeProject.title}
@@ -422,7 +447,7 @@ export const InteractiveShowcase: React.FC = () => {
                   {activeProject.tools.map(tool => (
                     <span
                       key={tool}
-                      className="px-3 py-1 bg-white/10 rounded-full text-sm font-inter font-300 text-white/80"
+                      className="px-3 py-1 bg-white opacity-10 rounded-full text-sm font-inter font-300 text-white/80"
                     >
                       {tool}
                     </span>
@@ -463,8 +488,8 @@ export const InteractiveShowcase: React.FC = () => {
             {/* Close Button */}
             <button
               ref={closeButtonRef}
-              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20
-                       rounded-full transition-all duration-300 backdrop-blur-sm"
+              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white opacity-10 hover:bg-white/20
+                       rounded-full transition-all duration-300 backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               onClick={handleCloseModal}
               aria-label="Close modal"
             >

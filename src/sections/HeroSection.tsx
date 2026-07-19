@@ -1,13 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from '@/utils/gsapInit';
 
 export const HeroSection: React.FC = () => {
-  useEffect(() => {
-    // Create GSAP timeline for hero reveal
-    const tl = gsap.timeline();
+  const heroRef = useRef<HTMLElement | null>(null);
 
-    // Film grain overlay animation
-    tl.to(
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Create GSAP timeline for hero reveal
+      const tl = gsap.timeline();
+
+      // Film grain overlay animation
+      tl.to(
       '.film-grain',
       {
         opacity: 0,
@@ -17,8 +20,8 @@ export const HeroSection: React.FC = () => {
       0
     );
 
-    // Background elements parallax
-    tl.from(
+      // Background elements parallax
+      tl.from(
       '.bg-layer-1',
       {
         yPercent: 20,
@@ -49,8 +52,8 @@ export const HeroSection: React.FC = () => {
         0.9
       );
 
-    // Premium typography reveal with stagger
-    tl.from(
+      // Premium typography reveal with stagger
+      tl.from(
       '.hero-title span',
       {
         yPercent: 100,
@@ -83,24 +86,25 @@ export const HeroSection: React.FC = () => {
         2.8
       );
 
-    // Add subtle floating animation to decorative elements
-    gsap.to('.floating-element', {
+      // Add subtle floating animation to decorative elements
+      gsap.to('.floating-element', {
       y: '-20px',
       rotation: 5,
       duration: 6,
       repeat: -1,
       yoyo: true,
       ease: 'sine.inOut'
-    });
+      });
+    }, heroRef);
 
-    // Cleanup
     return () => {
-      tl.kill();
+      ctx.revert();
     };
   }, []);
 
   return (
     <section
+      ref={heroRef}
       className="relative min-h-screen w-full overflow-hidden"
       aria-label="Cinematic hero section"
     >
@@ -117,7 +121,7 @@ export const HeroSection: React.FC = () => {
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 text-center text-white">
         {/* Title with individual letter animation */}
-        <h1 className="hero-title text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-playfair-display font-900 leading-tight tracking-tighter mb-6">
+        <h1 className="hero-title whitespace-pre-wrap text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-playfair-display font-900 leading-tight tracking-tighter mb-6">
           <span className="inline-block">C</span>
           <span className="inline-block">i</span>
           <span className="inline-block">n</span>
@@ -141,7 +145,7 @@ export const HeroSection: React.FC = () => {
         </h1>
 
         {/* Subtitle with individual letter animation */}
-        <p className="hero-subtitle text-xl md:text-2xl lg:text-3xl font-inter font-400 max-w-xl">
+        <p className="hero-subtitle whitespace-pre-wrap text-xl md:text-2xl lg:text-3xl font-inter font-400 max-w-xl">
           <span className="inline-block">W</span>
           <span className="inline-block">h</span>
           <span className="inline-block">e</span>
@@ -176,11 +180,11 @@ export const HeroSection: React.FC = () => {
 
         {/* CTA Button */}
         <div className="hero-cta mt-10 flex items-center gap-6">
-          <a href="#story" className="relative inline-flex items-center px-8 py-4 bg-transparent border-2 border-white/20 text-white hover:text-white/90 transition-all duration-300 hover:bg-white/5 backdrop-blur-sm rounded-lg">
+          <a href="#story" className="relative inline-flex items-center px-8 py-4 border-2 border-white/60 bg-white/10 text-white transition-all duration-300 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 backdrop-blur-sm rounded-lg">
             Explore the Journey
             <span className="ml-2">→</span>
           </a>
-          <button className="relative inline-flex items-center px-8 py-4 bg-transparent border-2 border-white/20 text-white hover:text-white/90 transition-all duration-300 hover:bg-white/5 backdrop-blur-sm rounded-lg">
+          <button type="button" className="relative inline-flex items-center px-8 py-4 border-2 border-white/60 bg-white/10 text-white transition-all duration-300 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 backdrop-blur-sm rounded-lg">
             Learn More
             <span className="ml-2">→</span>
           </button>
@@ -188,10 +192,10 @@ export const HeroSection: React.FC = () => {
 
         {/* Floating decorative elements */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="floating-element absolute -top-10 left-1/5 w-16 h-16 bg-white/5 rounded-full backdrop-blur-sm animate-float-slow"></div>
-          <div className="floating-element absolute bottom-1/3 right-1/4 w-20 h-20 bg-white/3 rounded-full backdrop-blur-sm animate-float-medium"></div>
-          <div className="floating-element absolute top-1/3 left-3/4 w-12 h-12 bg-white/4 rounded-full backdrop-blur-sm animate-float-fast"></div>
-          <div className="floating-element absolute bottom-1/4 left-1/4 w-18 h-18 bg-white/2 rounded-full backdrop-blur-sm animate-float-medium"></div>
+          <div className="floating-element absolute -top-10 left-1/5 w-16 h-16 bg-white opacity-5 rounded-full backdrop-blur-sm animate-float-slow"></div>
+          <div className="floating-element absolute bottom-1/3 right-1/4 w-20 h-20 bg-white opacity-3 rounded-full backdrop-blur-sm animate-float-medium"></div>
+          <div className="floating-element absolute top-1/3 left-3/4 w-12 h-12 bg-white opacity-4 rounded-full backdrop-blur-sm animate-float-fast"></div>
+          <div className="floating-element absolute bottom-1/4 left-1/4 w-18 h-18 bg-white opacity-2 rounded-full backdrop-blur-sm animate-float-medium"></div>
         </div>
       </div>
     </section>

@@ -1,9 +1,5 @@
 import { useEffect, useRef } from 'react';
 import gsap from '@/utils/gsapInit';
-import Lenis from 'lenis';
-
-// Import lenis instance (we'll get it from window or create singleton)
-let lenisInstance: Lenis | null = null;
 
 export const StoryScroll: React.FC = () => {
   const storyRef = useRef<HTMLElement | null>(null);
@@ -12,26 +8,7 @@ export const StoryScroll: React.FC = () => {
   const floatingElements = useRef<(HTMLElement | null)[]>([]);
 
   useEffect(() => {
-    // Initialize Lenis if not already done
-    if (!lenisInstance) {
-      lenisInstance = new Lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        orientation: 'vertical',
-        gestureOrientation: 'vertical',
-        smoothWheel: true,
-        syncTouch: false,
-        touchMultiplier: 2
-      });
-
-      function raf(time: number) {
-        lenisInstance!.raf(time);
-        requestAnimationFrame(raf);
-      }
-
-      requestAnimationFrame(raf);
-    }
-
+    const ctx = gsap.context(() => {
     // Get all elements for animation
     if (storyRef.current) {
       const current = storyRef.current;
@@ -131,16 +108,18 @@ export const StoryScroll: React.FC = () => {
       });
     }
 
-    // Cleanup
+    }, storyRef);
+
     return () => {
-      tl.kill();
+      ctx.revert();
     };
   }, []);
 
   return (
     <section
       ref={storyRef}
-      className="relative min-h-[100vh] w-full overflow-hidden bg-background"
+      id="story"
+      className="relative min-h-[100vh] w-full overflow-hidden bg-[#020617]"
       aria-label="Story scroll section"
     >
       {/* Parallax layers */}
@@ -156,7 +135,7 @@ export const StoryScroll: React.FC = () => {
         <div className="space-y-16 max-w-2xl mx-auto">
           {/* Text blocks with reveal animation */}
           <div className="text-reveal">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-playfair-display font-700 mb-6 leading-snug">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-playfair-display font-700 mb-6 leading-snug text-white">
               <span>The</span>
               <span> Journey</span>
               <span> Begins</span>
@@ -197,12 +176,12 @@ export const StoryScroll: React.FC = () => {
           {/* Image with masking effect */}
           <div className="relative h-96 md:h-[400px] lg:h-[500px] rounded-2xl overflow-hidden">
             <div className="absolute inset-0 bg-[url('/assets/story-image-1.jpg')] bg-cover bg-center image-mask"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-background/80 to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-[#020617]/80 to-transparent pointer-events-none"></div>
           </div>
 
           {/* Additional text block */}
           <div className="text-reveal">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-playfair-display font-700 mb-6 leading-snug">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-playfair-display font-700 mb-6 leading-snug text-white">
               <span>Where</span>
               <span> Creativity</span>
               <span> Meets</span>
@@ -240,12 +219,12 @@ export const StoryScroll: React.FC = () => {
           {/* Another image */}
           <div className="relative h-96 md:h-[400px] lg:h-[500px] rounded-2xl overflow-hidden mt-16">
             <div className="absolute inset-0 bg-[url('/assets/story-image-2.jpg')] bg-cover bg-center image-mask"></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#020617]/80 to-transparent pointer-events-none"></div>
           </div>
 
           {/* Final text block */}
           <div className="text-reveal">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-playfair-display font-700 mb-6 leading-snug">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-playfair-display font-700 mb-6 leading-snug text-white">
               <span>The</span>
               <span> Journey</span>
               <span> Continues</span>
@@ -277,17 +256,17 @@ export const StoryScroll: React.FC = () => {
 
         {/* Glassmorphism panels */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="glass-panel absolute -top-10 left-1/6 w-64 h-20 bg-white/10 backdrop-blur-sm border-white/20 rounded-lg"></div>
-          <div className="glass-panel absolute bottom-1/3 right-1/4 w-72 h-24 bg-white/10 backdrop-blur-sm border-white/20 rounded-lg"></div>
-          <div className="glass-panel absolute top-1/2 left-3/5 w-80 h-28 bg-white/10 backdrop-blur-sm border-white/20 rounded-lg"></div>
+          <div className="glass-panel absolute -top-10 left-1/6 w-64 h-20 bg-white opacity-10 backdrop-blur-sm border-white opacity-20 rounded-lg"></div>
+          <div className="glass-panel absolute bottom-1/3 right-1/4 w-72 h-24 bg-white opacity-10 backdrop-blur-sm border-white opacity-20 rounded-lg"></div>
+          <div className="glass-panel absolute top-1/2 left-3/5 w-80 h-28 bg-white opacity-10 backdrop-blur-sm border-white opacity-20 rounded-lg"></div>
         </div>
 
         {/* Floating objects */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="floating-object absolute -top-20 left-1/5 w-16 h-16 bg-white/5 rounded-full backdrop-blur-sm animate-float-slow"></div>
-          <div className="floating-object absolute bottom-1/2 right-1/3 w-20 h-20 bg-white/3 rounded-full backdrop-blur-sm animate-float-medium"></div>
-          <div className="floating-object absolute top-1/3 left-3/4 w-12 h-12 bg-white/4 rounded-full backdrop-blur-sm animate-float-fast"></div>
-          <div className="floating-object absolute bottom-1/4 left-1/4 w-18 h-18 bg-white/2 rounded-full backdrop-blur-sm animate-float-medium"></div>
+          <div className="floating-object absolute -top-20 left-1/5 w-16 h-16 bg-white opacity-5 rounded-full backdrop-blur-sm animate-float-slow"></div>
+          <div className="floating-object absolute bottom-1/2 right-1/3 w-20 h-20 bg-white opacity-3 rounded-full backdrop-blur-sm animate-float-medium"></div>
+          <div className="floating-object absolute top-1/3 left-3/4 w-12 h-12 bg-white opacity-4 rounded-full backdrop-blur-sm animate-float-fast"></div>
+          <div className="floating-object absolute bottom-1/4 left-1/4 w-18 h-18 bg-white opacity-2 rounded-full backdrop-blur-sm animate-float-medium"></div>
         </div>
       </div>
     </section>
