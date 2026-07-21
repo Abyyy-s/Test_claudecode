@@ -10,7 +10,7 @@ Successfully implemented a cinematic, emotional single-page website using:
 - Premium typography (Playfair Display, Inter)
 - Custom cursor, magnetic buttons, parallax effects, SVG animations
 - Responsive design with accessibility considerations
-
+#hi this is a kind edit thode who find this will be the luckiest......
 ## File Structure
 ```
 src/
